@@ -82,6 +82,10 @@ start:
 			//              TR________________ice                              (
 			rest := s[triceStartloc[1]:fmtLoc[0]]
 			idLoc := matchNbID.FindStringIndex(rest)
+
+			// For custom macros, the format string isn't always the first arg after Trice ID
+			// (assert macros put the condition first). So loc[5] tracks where the actual
+			// first arg starts, not where the format string is
 			if idLoc == nil { // no ID statement
 				clpIndex = strings.Index(rest, `)`)
 				// - if `)` is located before format string starts, discard trice
@@ -91,9 +95,9 @@ start:
 				if clpIndex != -1 { // a closing parenthesis was found before format string
 					return
 				}
-				loc = append(loc, triceStartloc[0], triceStartloc[0]+typeNameLoc[1], triceStartloc[1], 0, 0, fmtLoc[0], fmtLoc[1])
+				loc = append(loc, triceStartloc[0], triceStartloc[0]+typeNameLoc[1], triceStartloc[1], 0, 0, triceStartloc[1], fmtLoc[1])
 			} else {
-				loc = append(loc, triceStartloc[0], triceStartloc[0]+typeNameLoc[1], triceStartloc[1], triceStartloc[1]+idLoc[0], triceStartloc[1]+idLoc[1], fmtLoc[0], fmtLoc[1])
+				loc = append(loc, triceStartloc[0], triceStartloc[0]+typeNameLoc[1], triceStartloc[1], triceStartloc[1]+idLoc[0], triceStartloc[1]+idLoc[1], triceStartloc[1]+(idLoc[1]-idLoc[0])+2 /*len(", ")*/, fmtLoc[1])
 			}
 
 			if offset != 0 {
